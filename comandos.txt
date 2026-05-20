@@ -1,3 +1,7 @@
+cd ~/cashi/cashi-whatsapp-worker
+
+git pull
+
 cat > .env << 'EOF'
 BACKEND_URL=http://localhost:8085
 WORKER_TOKEN=75a0c838e28b7f4e7f2e18e165d71452296611797a2f6006409ca5c4da1f9085
@@ -7,3 +11,7 @@ CHECK_TIMEOUT_MS=10000
 WA_AUTH_FILE=./wa-auth-keys
 LOG_LEVEL=info
 EOF
+
+npm install
+
+npm run dev
