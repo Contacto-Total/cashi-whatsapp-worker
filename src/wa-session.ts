@@ -15,6 +15,7 @@ import {
   useMultiFileAuthState,
   DisconnectReason,
   makeCacheableSignalKeyStore,
+  fetchLatestBaileysVersion,
   type WASocket,
 } from '@whiskeysockets/baileys';
 import { Boom } from '@hapi/boom';
@@ -43,17 +44,19 @@ export async function startSession(): Promise<void> {
   // Baileys requiere un directorio para el estado multi-file
   const authDir = config.waAuthFile.replace(/\.json$/, '-keys');
   const { state, saveCreds } = await useMultiFileAuthState(authDir);
+  const { version } = await fetchLatestBaileysVersion();
 
   sock = makeWASocket({
+    version,
     auth: {
       creds: state.creds,
       keys: makeCacheableSignalKeyStore(state.keys, logger as any),
     },
     printQRInTerminal: false,
     logger: logger.child({ module: 'baileys' }) as any,
-    // Solo necesitamos presencia (onWhatsApp), no historial de mensajes
     syncFullHistory: false,
     markOnlineOnConnect: false,
+    defaultQueryTimeoutMs: undefined,
   });
 
   sock.ev.on('creds.update', saveCreds);
