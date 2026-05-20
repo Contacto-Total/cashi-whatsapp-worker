@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  whatsapp-worker:
+    build: .
+    restart: unless-stopped
+    volumes:
+      - wa-auth:/app/wa-auth-keys
+    environment:
+      BACKEND_URL: ${BACKEND_URL}
+      WORKER_TOKEN: ${WORKER_TOKEN}
+      BATCH_SIZE: ${BATCH_SIZE:-10}
+      POLL_INTERVAL_MS: ${POLL_INTERVAL_MS:-30000}
+      CHECK_TIMEOUT_MS: ${CHECK_TIMEOUT_MS:-10000}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    # Para el primer arranque (QR scan), conectar interactivo:
+    #   docker compose run --rm whatsapp-worker
+    stdin_open: true
+    tty: true
+
+volumes:
+  wa-auth:
