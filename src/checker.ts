@@ -3,7 +3,7 @@
  *
  * Reglas:
  *  - Normaliza a E.164 Perú (+51XXXXXXXXX).
- *  - Números fijos (no empiezan con 9) → NO_VALIDADO directo (fijos no tienen WA).
+ *  - Números fijos (no empiezan con 9) → NO_TIENE directo (fijos no tienen WA).
  *  - Usa sock.onWhatsApp() de Baileys — solo consulta existencia, no envía mensajes.
  *  - Timeout configurable para no bloquear el poller.
  *  - Errores → ERROR (el registro queda SIN_VALIDAR para reintento).
@@ -17,15 +17,15 @@ export async function checkWhatsApp(phone: string): Promise<WaStatus> {
   const e164 = normalizePhone(phone);
 
   if (!e164) {
-    logger.warn({ phone: maskPhone(phone) }, 'phone format invalid, skipping');
-    return 'ERROR';
+    logger.warn({ phone: maskPhone(phone) }, 'phone format invalid → NO_TIENE (permanente)');
+    return 'NO_TIENE';
   }
 
   // Números fijos peruanos (7-8 dígitos, no empiezan con 9) nunca tienen WA
   const localDigits = e164.replace('+51', '');
   if (!localDigits.startsWith('9')) {
-    logger.debug({ phone: maskPhone(phone) }, 'landline detected, marking NO_VALIDADO');
-    return 'NO_VALIDADO';
+    logger.debug({ phone: maskPhone(phone) }, 'landline detected, marking NO_TIENE');
+    return 'NO_TIENE';
   }
 
   try {
@@ -37,12 +37,12 @@ export async function checkWhatsApp(phone: string): Promise<WaStatus> {
     ]);
 
     if (!Array.isArray(result) || result.length === 0) {
-      logger.debug({ phone: maskPhone(phone) }, 'no WA account found → NO_VALIDADO');
-      return 'NO_VALIDADO';
+      logger.debug({ phone: maskPhone(phone) }, 'no WA account found → NO_TIENE');
+      return 'NO_TIENE';
     }
 
     const exists = result[0]?.exists === true;
-    const status: WaStatus = exists ? 'VALIDADO' : 'NO_VALIDADO';
+    const status: WaStatus = exists ? 'TIENE' : 'NO_TIENE';
     logger.debug({ phone: maskPhone(phone), status }, 'WA check done');
     return status;
   } catch (err) {
